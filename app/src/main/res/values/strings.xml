@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Android_routine</string>
+    <string name="title_activity_task_item">TaskItem</string>
 </resources>
