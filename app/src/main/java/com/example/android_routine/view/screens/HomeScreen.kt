@@ -2,6 +2,7 @@ package com.example.android_routine.view.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.layout.*
@@ -103,7 +104,8 @@ fun HomeScreen(navController: NavController, viewModel: TaskViewModel) {
                     fontWeight = FontWeight.Normal,
                     color = Color(0xFF2196F3),
                     modifier = Modifier
-                        .padding(vertical = 8.dp))
+                        .padding(vertical = 8.dp)
+                        .clickable { navController.navigate("allTasks") })
             }
 
             val todayTasks = viewModel.getTodayTasks()
