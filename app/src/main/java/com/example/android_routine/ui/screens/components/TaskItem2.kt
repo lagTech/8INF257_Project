@@ -1,6 +1,6 @@
 @file:Suppress("UNREACHABLE_CODE")
 
-package com.example.android_routine.view.components
+package com.example.android_routine.ui.screens.components
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -19,10 +19,14 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
-import com.example.android_routine.model.Task
+import com.example.android_routine.data.model.Task
 
 @Composable
-fun TaskItem2() {
+fun TaskItem2(
+    task : Task,
+    onTaskClick: () -> Unit,
+    onDelete: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -50,7 +54,7 @@ fun TaskItem2() {
                 )
             Column {
                 Text(
-                    text="Finish Report",
+                    text= task.title,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF333333).copy(alpha = 0.70f),
                     fontSize = 16.sp,
@@ -59,7 +63,7 @@ fun TaskItem2() {
 
                 )
                 Text(
-                    text="Thur, 7 Sept 2023",
+                    text= task.dueTime.toString(),
                     fontSize = 12.sp,
                     color = Color.Red,
                     modifier = Modifier
@@ -73,12 +77,4 @@ fun TaskItem2() {
 
 fun Checkbox(checked: Boolean, onCheckedChange: Nothing?, modifier: Modifier.Companion, colors: Color) {
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TaskItem2Preview() {
-    TaskItem2(
-
-    )
 }

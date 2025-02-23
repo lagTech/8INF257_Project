@@ -1,7 +1,8 @@
-package com.example.android_routine.view.components
+package com.example.android_routine.ui.screens.components
 
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,11 +18,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun CategoryItem(name: String, icon: ImageVector, color: Long) {
+fun CategoryItem(navController: NavController, name: String, icon: ImageVector, color: Long) {
+
     Column(
         modifier = Modifier
+            .clickable {
+                if(name == "See more"){
+                    navController.navigate(Screen.AllCategories.route){
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
             .padding(8.dp)
             .size(width = 103.dp, height = 88.dp)
             .border(
@@ -50,7 +62,9 @@ fun CategoryItem(name: String, icon: ImageVector, color: Long) {
 @Preview
 @Composable
 fun CategoryItemPreview(){
+    val fakeNavController = rememberNavController()
     CategoryItem(
+        navController = fakeNavController,
         name = "Personal",
         icon = Icons.Outlined.Person,
         color = 0xFFFF5722

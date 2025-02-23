@@ -1,4 +1,4 @@
-package com.example.android_routine.view.components
+package com.example.android_routine.ui.screens.components
 
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
@@ -27,25 +27,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-
-import androidx.navigation.compose.rememberNavController
-
-@Preview(showBackground = true)
-@Composable
-fun BottomNavPreview() {
-
-    val navController = rememberNavController()
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        BottomNav(navController)
-    }
-}
 
 @Composable
-fun BottomNav(navController: NavController) {
+fun BottomNav2() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -86,13 +70,7 @@ fun BottomNav(navController: NavController) {
                 selected = false,
                 onClick = { }
             )
-            // Empty item for FAB spacing
-            NavigationBarItem(
-                icon = { },
-                selected = false,
-                onClick = { },
-                enabled = false
-            )
+
             NavigationBarItem(
                 icon = {
                     Icon(
@@ -115,25 +93,6 @@ fun BottomNav(navController: NavController) {
             )
         }
 
-        // Floating Action Button
-        FloatingActionButton(
-            onClick = { navController.navigate("addTask") },
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = (-28).dp),
-            containerColor = Color(0xFF2196F3),
-            shape = androidx.compose.foundation.shape.CircleShape,
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 0.dp
-            ),
-            content = {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Add",
-                    tint = Color.White
-                )
-            }
-        )
+
     }
 }
