@@ -120,7 +120,7 @@ fun HomeScreen(navController: NavController, viewModel: TaskViewModel) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         ){
-            BottomNav()
+            BottomNav(navController)
         }
     }
 
