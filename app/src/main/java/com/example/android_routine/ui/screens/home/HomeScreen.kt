@@ -39,10 +39,9 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by remember { mutableStateOf("") }
 
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = Modifier.fillMaxSize()
+        .padding(vertical = 40.dp, horizontal = 15.dp)){
         Column( ) {
-
-            Spacer(modifier = Modifier.height(20.dp))
 
             TextField(
                 value = uiState.searchQuery,
@@ -64,8 +63,9 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0x142196F3),
                     unfocusedContainerColor = Color(0x142196F3),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedLabelColor = Color.Transparent
+                    focusedIndicatorColor = Color.Green,
+                    unfocusedLabelColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
                 ),
 
                 singleLine = true,

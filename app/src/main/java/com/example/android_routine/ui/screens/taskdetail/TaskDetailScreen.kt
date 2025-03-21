@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.android_routine.ui.screens.components.BottomNav
+import com.example.android_routine.ui.screens.components.PrioritySection
 
 
 @Composable
@@ -84,7 +85,7 @@ fun TaskDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Task details form
-
+                Text("Title")
                 TextField(
                     value = uiState.title,
                     onValueChange = { viewModel.updateTitle(it) },
@@ -100,7 +101,7 @@ fun TaskDetailScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
+                Text("Category")
                 TextField(
                     value = uiState.category,
                     onValueChange = { viewModel.updateCategory(it) },
@@ -117,6 +118,21 @@ fun TaskDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Time",
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Date",
+                    modifier = Modifier.weight(1f),
+
+                )
+            }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -152,6 +168,7 @@ fun TaskDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                Text("Description")
                 TextField(
                     value = uiState.notes,
                     onValueChange = { viewModel.updateNotes(it) },
@@ -166,6 +183,13 @@ fun TaskDetailScreen(
                         unfocusedLabelColor = Color.Transparent
                     ),
                 )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Priority", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
+
+            PrioritySection()
+
+
 
             uiState.error?.let { error ->
                 Text(

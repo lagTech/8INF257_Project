@@ -14,9 +14,12 @@ import com.example.android_routine.ui.screens.alltask.AllTasksViewModel
 import com.example.android_routine.ui.screens.home.HomeViewModel
 import androidx.navigation.navArgument
 import com.example.android_routine.data.repository.TaskRepositoryImpl
+import com.example.android_routine.ui.screens.addtask.AddTaskViewModel
+import com.example.android_routine.ui.screens.addtask.AddTaskViewModelFactory
 import com.example.android_routine.ui.screens.taskdetail.TaskDetailScreen
 import com.example.android_routine.ui.screens.taskdetail.TaskDetailViewModel
 import com.example.android_routine.ui.screens.taskdetail.TaskDetailViewModelFactory
+import com.example.android_routine.ui.screens.addtask.AddTaskScreen
 
 
 @Composable
@@ -32,7 +35,12 @@ fun AppNavigation() {
         startDestination = Screen.Home.route
     ) {
         composable(Screen.Home.route) { HomeScreen(navController, homeViewModel) }
-//        composable(Screen.AddTask.route) { AddTaskScreen() }
+        composable(Screen.AddTask.route) {
+            val addTaskViewModel: AddTaskViewModel = viewModel(
+                factory = AddTaskViewModelFactory(repository)
+            )
+            AddTaskScreen(navController, addTaskViewModel)
+        }
         composable(Screen.AllTasks.route) { AllTasksScreen(navController, allTasksViewModel) }
         composable(Screen.AllCategories.route) { AllCategoriesScreen() }
         composable(

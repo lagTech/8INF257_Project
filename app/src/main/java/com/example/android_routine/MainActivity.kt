@@ -11,10 +11,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.room.Room
+import com.example.android_routine.data.source.TasksDatabase
 import com.example.android_routine.navigation.AppNavigation
 import com.example.android_routine.ui.theme.Android_routineTheme
 
 class MainActivity : ComponentActivity() {
+    private val db by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            TasksDatabase::class.java,
+            TasksDatabase.DATABASE_NAME
+        ).build()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

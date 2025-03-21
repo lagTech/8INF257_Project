@@ -20,6 +20,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.example.android_routine.data.model.Task
+import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun TaskItem2(
@@ -27,6 +32,39 @@ fun TaskItem2(
     onTaskClick: () -> Unit,
     onDelete: () -> Unit
 ) {
+
+    fun isOverdue(dueDate: String?, dueTime: String?): Boolean {
+        if (dueDate.isNullOrEmpty() || dueTime.isNullOrEmpty()) return false
+
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())  // Expected format: "2025-02-23"
+        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())     // Expected format: "02:30 PM"
+
+        return try {
+            val currentDate = Calendar.getInstance()
+            val taskDate = Calendar.getInstance().apply {
+                time = dateFormat.parse(dueDate) ?: return false
+            }
+
+            // If the due date is before today, the task is overdue
+            if (taskDate.before(currentDate)) return true
+
+            // If the due date is today, check the time
+            if (taskDate.get(Calendar.YEAR) == currentDate.get(Calendar.YEAR) &&
+                taskDate.get(Calendar.DAY_OF_YEAR) == currentDate.get(Calendar.DAY_OF_YEAR)
+            ) {
+                val currentTime = timeFormat.parse(timeFormat.format(currentDate.time))!!
+                val taskTime = timeFormat.parse(dueTime) ?: return false
+                return taskTime.before(currentTime)
+            }
+
+            false
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
+    val timeColor = if (isOverdue(task.dueDate, task.dueTime)) Color.Red else Color.Black
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,11 +79,11 @@ fun TaskItem2(
         ) {
 
             Checkbox(
-                checked = true,
-                onCheckedChange = null,
+                checked = false,
+                onCheckedChange = {onTaskClick()},
                 colors = CheckboxDefaults.colors(
-                    checkedColor = Color.Transparent,
-                    uncheckedColor = Color.Blue
+                    checkedColor = Color.Blue,
+                    uncheckedColor = Color.Gray
                 ),
                 modifier = Modifier
                     .border(
@@ -63,9 +101,9 @@ fun TaskItem2(
 
                 )
                 Text(
-                    text= task.dueTime.toString(),
+                    text = "${task.dueDate ?: "No Date"} ${task.dueTime ?: "No Time"}",
                     fontSize = 12.sp,
-                    color = Color.Red,
+                    color = timeColor,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 0.dp)
 

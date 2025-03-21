@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -74,7 +75,7 @@ fun BottomNav2() {
             NavigationBarItem(
                 icon = {
                     Icon(
-                        Icons.Default.Settings,
+                        Icons.Default.Notifications,
                         contentDescription = "Notes",
                         tint = if (false) Color(0xFF2196F3) else Color.Gray
                     ) },

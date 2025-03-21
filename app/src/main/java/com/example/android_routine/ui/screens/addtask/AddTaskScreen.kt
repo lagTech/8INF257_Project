@@ -41,138 +41,43 @@ import com.example.android_routine.ui.screens.components.CategoryItem
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import com.example.android_routine.data.repository.TaskRepository
+import com.example.android_routine.ui.screens.components.CategoryDropDownMenu
+import com.example.android_routine.ui.screens.components.DateItem
+import com.example.android_routine.ui.screens.components.DateTimePickers
+import com.example.android_routine.ui.screens.components.NotesCard
+import com.example.android_routine.ui.screens.components.PeriodicityDropDown
+import com.example.android_routine.ui.screens.components.PrioritySection
 
 
 @Composable
-fun CategoryDropDownMenu() {
-    var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf("Work") }
+fun AddTaskScreen(navController: NavController, viewModel: AddTaskViewModel) {
 
-    val options = listOf("Work", "Personal", "Shopping", "Health")
+    val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            //.padding(16.dp)
-            .background(color = Color(0x142196F3)) // Ensures background color
-    ) {
-        Button(
-            onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth().border(
-                width = 1.dp,
-                color = Color(0xFF2196F3),
-                shape = RoundedCornerShape(10.dp)
-            ).padding(vertical = 1.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent, // Corrected from 0x142196F3 (invalid color)
-                contentColor = Color.LightGray   // Ensures text is visible
-            )
-        ) {
-            Text(selectedOption, modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold)
-            Icon(
-                imageVector = Icons.Outlined.KeyboardArrowDown,
-                contentDescription = "Arrow",
-                modifier = Modifier.size(27.dp),
-                tint = Color.LightGray
-            )
-        }
+    Box(modifier = Modifier.fillMaxSize()){
+        Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
+            Spacer(modifier = Modifier.height(8.dp))
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0x142196F3)) // Fix dropdown background
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option, color = Color.LightGray) }, // Ensures black text
-                    onClick = {
-                        selectedOption = option
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-
-}
-
-@Composable
-fun DateItem(name: String, icon: ImageVector, color: Long) {
-    Row(
-        modifier = Modifier
-            .padding(3.dp)
-            .size(width = 150.dp, height = 50.dp),
-        //.padding(16.dp),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(imageVector = icon,
-            contentDescription = name,
-            modifier = Modifier.size(27.dp),
-            tint = Color(color)
-        )
-        Text(
-            text = name,
-            color = Color.LightGray,
-            fontSize = 16.sp,
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier.padding(start = 2.dp)
-        )
-
-    }
-}
-
-@Composable
-fun PrioritySection() {
-    var selectedOption by remember { mutableStateOf("Moyenne") }
-
-    val options = listOf("Faible", "Moyenne", "Elevee")
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(1.dp)
-            .size(width = 150.dp, height = 50.dp),
-        horizontalArrangement = Arrangement.Start, // Aligns items to the left
-        verticalAlignment = Alignment.CenterVertically // Aligns items vertically
-    ) {
-        options.forEach { option ->
             Row(
                 modifier = Modifier
-                    .clickable { selectedOption = option } // Click anywhere to select
-                    .padding(end = 12.dp), // Spacing between items
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
-            ) {
-                RadioButton(
-                    selected = (selectedOption == option),
-                    onClick = { selectedOption = option },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = Color(0xFF2196F3),
-                        unselectedColor = Color.LightGray
+            ){
+
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF2196F3)
                     )
-                )
-                Text(
-                    text = option,
-                    modifier = Modifier.padding(start = 1.dp),
-                    color = Color.LightGray
-                )
+                }
+
             }
-        }
-    }
-}
-
-
-
-@Composable
-fun AddTaskScreen(navController: NavController) {
-    Box(modifier = Modifier.fillMaxSize()){
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
             Text(
                 "Add task",
@@ -182,34 +87,23 @@ fun AddTaskScreen(navController: NavController) {
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
-            TextField(
-                value = "", onValueChange = {},
-                placeholder = { Text(
-                    text = "Finish Report",
-                    color = Color.LightGray,
 
-                    )},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = Color(0x142196F3)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFF2196F3),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .padding(vertical = 2.dp),
-                shape = RoundedCornerShape(10.dp),
+            TextField(
+                value = uiState.title,
+                onValueChange = { viewModel.updateTitle(it) },
+                label = { Text("Title") },
+                isError = uiState.isError,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0x142196F3),
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent, //
+                    unfocusedContainerColor = Color(0x142196F3),
+                    focusedIndicatorColor = Color.Green,
+                    unfocusedIndicatorColor = Color.Transparent,
                     unfocusedLabelColor = Color.Transparent
                 ),
-
-                singleLine = true
+                shape = RoundedCornerShape(10.dp),
+                supportingText = { uiState.errorMessage?.let { Text(it, color = Color.Red) } }
             )
 
             Text("Category", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 3.dp), color = Color(0xFF2196F3),)
@@ -217,77 +111,36 @@ fun AddTaskScreen(navController: NavController) {
             //
             CategoryDropDownMenu()
 
-            Text("Date", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2196F3))
+            Text("Date", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
-                DateItem("Set due date", Icons.Outlined.DateRange, 0xFFFFC107)
-                DateItem("Set Time", Icons.Outlined.Notifications, 0xFFFF5722)
-            }
+            DateTimePickers(
+                context = LocalContext.current,
+                onDateSelected = { viewModel.updateDueDate(it) },
+                onTimeSelected = { viewModel.updateDueTime(it) }
+            )
 
-            Text("Priority", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2196F3))
+
+            Text("Priority", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
 
             PrioritySection()
 
-            Text("Reminder", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2196F3))
-            Row(
-                modifier = Modifier
-                    .padding(3.dp)
-                    .size(width = 150.dp, height = 50.dp),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Set Reminder",
-                    modifier = Modifier.size(27.dp),
-                    tint = Color(0xFFFF5722)
-                )
-                Text(
-                    text = "Set Reminder",
-                    color = Color.LightGray,
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily.Default,
-                    fontWeight = FontWeight.Normal,
-                    modifier = Modifier.padding(start = 1.dp)
-                )
+            Text("Periodicity", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
 
-            }
+            PeriodicityDropDown(viewModel)
 
             Text("Notes", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2196F3))
 
-            TextField(
-                value = "", onValueChange = {},
-                placeholder = { Text(
-                    text = "Make sure to research from internet",
-                    color = Color.LightGray,
-
-                    )},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = Color(0x142196F3)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFF2196F3),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .padding(horizontal = 1.dp, vertical = 1.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent, //
-                    unfocusedLabelColor = Color.Transparent
-                ),
-
-                singleLine = true
-            )
+            NotesCard(uiState.notes, viewModel::updateNotes)
 
             Scaffold (
                 floatingActionButton = {
 
                     FloatingActionButton(
-                        onClick = { },
+                        onClick = {
+                            if (viewModel.addTask()){
+                                navController.popBackStack()
+                            }
+                        },
                         modifier = Modifier
                             .padding(vertical = 60.dp)
                             .offset(y = (-28).dp),
@@ -325,17 +178,13 @@ fun AddTaskScreen(navController: NavController) {
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddTaskScreenPreview() {
-    // Create a mock NavController
-    val mockNavController = rememberNavController()
-
-    // Use the mock dependencies in the preview
-    AddTaskScreen(
-        navController = mockNavController,
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun AddTaskScreenPreview() {
+//    // Create a mock NavController
+//    val mockNavController = rememberNavController()
+//
+//}
 
 
 

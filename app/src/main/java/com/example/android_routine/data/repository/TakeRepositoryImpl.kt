@@ -1,93 +1,119 @@
 package com.example.android_routine.data.repository
 
 import com.example.android_routine.data.model.Task
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TaskRepositoryImpl : TaskRepository {
+
+    private fun getCurrentDate(): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return dateFormat.format(Date()) // Returns today's date
+    }
+
     // Mock data - in real app this would come from database/API
-    private val _tasks = mutableListOf(
+    private val _tasks = MutableStateFlow<List<Task>>(
+        mutableListOf(
         Task(
             id = 1,
             title = "Morning Meeting",
             category = "Work",
-            dueTime = "09:00 AM",
-            dueDate = "",
+            dueTime = "09:00",
+            dueDate = getCurrentDate(),
             notes = "Daily standup",
-            isToday = true
+            priority = "high",
+            periodicity = "everyday",
+
         ),
         Task(
             id = 2,
             title = "Gym Session",
             category = "Health",
-            dueTime = "06:00 PM",
-            dueDate = "",
+            dueTime = "06:00",
+            dueDate = getCurrentDate(),
+            priority = "high",
+            periodicity = "everyday",
             notes = "Cardio day",
-            isToday = true
         ),
         Task(
             id = 3,
-            title = "Shopping",
+            title = "push my changes",
             category = "Personal",
-            dueTime = "04:00 PM",
-            dueDate = "",
+            dueTime = "04:00",
+            dueDate = getCurrentDate(),
             notes = "Buy groceries",
-            isToday = false
+            priority = "high",
+            periodicity = "everyday",
         ),
 
         Task(
             id = 4,
             title = "Shopping",
             category = "Personal",
-            dueTime = "04:00 PM",
-            dueDate = "",
+            dueTime = "09:00",
+            dueDate = getCurrentDate(),
             notes = "Buy groceries",
-            isToday = false
+            priority = "high",
+            periodicity = "everyday",
         ),
         Task(
             id = 5,
             title = "drink water",
             category = "Personal",
-            dueTime = "04:00 PM",
-            dueDate = "",
+            dueTime = "04:00",
+            dueDate = getCurrentDate(),
             notes = "Buy groceries",
-            isToday = true
+            priority = "high",
+            periodicity = "everyday",
         ),
 
         Task(
             id = 6,
             title = "Shopping",
             category = "Personal",
-            dueTime = "04:00 PM",
-            dueDate = "",
+            dueTime = "04:00",
+            dueDate = getCurrentDate(),
             notes = "Buy groceries",
-            isToday = true
+            priority = "high",
+            periodicity = "everyday",
         )
 
 
-    )
+    ))
 
-    override fun getAllTasks(): List<Task> = _tasks.toList()
 
-    override fun getTask(id: Int): Task? = _tasks.find { it.id == id }
+    override fun getAllTasks(): StateFlow<List<Task>> = _tasks  // Return StateFlow
+
+    override fun getTask(id: Int): Task? = _tasks.value.find { it.id == id }
+
+    override fun addTask(task: Task) {
+        _tasks.update { currentTasks ->
+            currentTasks + task
+        }
+    }
 
     override fun updateTask(task: Task) {
-        val index = _tasks.indexOfFirst { it.id == task.id }
-        if (index != -1) {
-            _tasks[index] = task
+        _tasks.update { currentTasks ->
+            currentTasks.map { if (it.id == task.id) task else it }
         }
     }
 
     override fun deleteTask(taskId: Int) {
-        _tasks.removeAll { it.id == taskId }
-    }
-
-    override fun addTask(task: Task) {
-        _tasks.add(task)
+        _tasks.update { currentTasks ->
+            currentTasks.filterNot { it.id == taskId }
+        }
     }
 
     override fun toggleTaskCompletion(taskId: Int) {
-        val index = _tasks.indexOfFirst { it.id == taskId }
-        if (index != -1) {
-            _tasks[index] = _tasks[index].copy(isCompleted = !_tasks[index].isCompleted)
+        _tasks.update { currentTasks ->
+            currentTasks.map { task ->
+                if (task.id == taskId) task.copy(isCompleted = !task.isCompleted) else task
+            }
         }
     }
+
+
 }
