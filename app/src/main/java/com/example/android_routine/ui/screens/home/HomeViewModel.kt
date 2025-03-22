@@ -59,20 +59,11 @@ class HomeViewModel(
          }
      }
 
-     /** Delete task and repository will automatically update the UI */
-     fun deleteTask(taskId: Int) {
-         viewModelScope.launch { repository.deleteTask(taskId) }
-     }
 
-     /** Toggle task completion and repository will automatically update UI */
-     fun toggleTaskCompletion(taskId: Int) {
-         viewModelScope.launch { repository.toggleTaskCompletion(taskId) }
-     }
 
-     /** Error handling */
-     private fun handleError(error: Exception) {
-         _uiState.update { it.copy(error = error.message) }
-     }
+
+
+
 
 
 
