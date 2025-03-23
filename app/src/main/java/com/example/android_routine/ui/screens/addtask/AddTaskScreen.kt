@@ -178,13 +178,6 @@ fun AddTaskScreen(navController: NavController, viewModel: AddTaskViewModel) {
 
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun AddTaskScreenPreview() {
-//    // Create a mock NavController
-//    val mockNavController = rememberNavController()
-//
-//}
 
 
 
