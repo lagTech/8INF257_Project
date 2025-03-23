@@ -59,28 +59,6 @@ class TaskRepositoryImpl : TaskRepository {
             priority = "high",
             periodicity = "everyday",
         ),
-        Task(
-            id = 5,
-            title = "drink water",
-            category = "Personal",
-            dueTime = "04:00",
-            dueDate = getCurrentDate(),
-            notes = "Buy groceries",
-            priority = "high",
-            periodicity = "everyday",
-        ),
-
-        Task(
-            id = 6,
-            title = "Shopping",
-            category = "Personal",
-            dueTime = "04:00",
-            dueDate = getCurrentDate(),
-            notes = "Buy groceries",
-            priority = "high",
-            periodicity = "everyday",
-        )
-
 
     ))
 
