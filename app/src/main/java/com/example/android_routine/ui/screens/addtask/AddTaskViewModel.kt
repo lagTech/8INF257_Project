@@ -35,20 +35,12 @@ class AddTaskViewModel(private val repository: TaskRepository) : ViewModel() {
         _uiState.update { it.copy(title = title, isError = false) }
     }
 
-    fun updateCategory(category: String) {
-        _uiState.update { it.copy(category = category) }
-    }
-
     fun updateDueTime(dueTime: String) {
         _uiState.update { it.copy(dueTime = dueTime) }
     }
 
     fun updateDueDate(dueDate: String) {
         _uiState.update { it.copy(dueDate = dueDate) }
-    }
-
-    fun updatePriority(priority: String) {
-        _uiState.update { it.copy(priority = priority) }
     }
 
     fun updatePeriodicity(periodicity: String) {
@@ -94,9 +86,4 @@ class AddTaskViewModel(private val repository: TaskRepository) : ViewModel() {
         return true
     }
 
-
-
-    fun clearError() {
-        _uiState.update { it.copy(isError = false, errorMessage = null) }
-    }
 }
