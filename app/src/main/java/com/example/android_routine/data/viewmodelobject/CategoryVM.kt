@@ -1,4 +1,4 @@
-package com.example.android_routine.data.model
+package com.example.android_routine.data.viewmodelobject
 
 data class CategoryVM(
     val id: Int = -1,

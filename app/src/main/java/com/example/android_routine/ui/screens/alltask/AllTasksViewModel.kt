@@ -4,19 +4,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.android_routine.data.model.Task
-import com.example.android_routine.data.repository.TaskRepository
-import com.example.android_routine.data.source.TasksDao
+import com.example.android_routine.data.source.TaskDao
+import com.example.android_routine.data.viewmodelobject.TaskVM
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class AllTasksViewModel(
-    val dao: TasksDao
+    val dao: TaskDao
 ) : ViewModel() {
     private val _tasks: MutableState<List<TaskVM>> =
         var tasks: State<List<TaskVM>> = _tasks
