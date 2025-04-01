@@ -4,12 +4,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.android_routine.data.source.TaskDao
+import com.example.android_routine.data.source.TasksDao
 import com.example.android_routine.data.viewmodelobject.TaskVM
 import kotlinx.coroutines.Job
 
 class AllTasksViewModel(
-    val dao: TaskDao
+    val dao: TasksDao
 ) : ViewModel() {
     private val _tasks: MutableState<List<TaskVM>> =
         var tasks: State<List<TaskVM>> = _tasks

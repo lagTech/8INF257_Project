@@ -1,13 +1,17 @@
 package com.example.android_routine.data.repository
 
 import com.example.android_routine.data.model.Task
-import kotlinx.coroutines.flow.StateFlow
+import com.example.android_routine.data.source.TasksDao
+import kotlinx.coroutines.flow.Flow
 
-interface TaskRepository {
-    fun getAllTasks(): StateFlow<List<Task>>
-    fun getTask(id: Int): Task?
-    fun updateTask(task: Task)
-    fun deleteTask(taskId: Int)
-    fun addTask(task: Task)
-    fun toggleTaskCompletion(taskId: Int)
+
+class TaskRepository(private val dao: TasksDao) {
+
+    fun getTasks(): Flow<List<Task>> = dao.getTasks()
+
+    suspend fun getTaskById(id: Int): Task? = dao.getTask(id)
+
+    suspend fun upsert(task: Task) = dao.upsertTask(task)
+
+    suspend fun delete(task: Task) = dao.deleteTask(task)
 }

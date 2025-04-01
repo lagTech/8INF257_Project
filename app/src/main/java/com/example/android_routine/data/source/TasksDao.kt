@@ -8,7 +8,7 @@ import com.example.android_routine.data.model.Task
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface TaskDao {
+interface TasksDao {
     @Query("SELECT * FROM task")
     fun getTasks() : Flow<List<Task>>
 

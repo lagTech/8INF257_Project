@@ -8,7 +8,7 @@ import com.example.android_routine.data.model.Task
 @Database(entities = [Task::class, Category::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract val taskDao: TaskDao
+    abstract val taskDao: TasksDao
     abstract val categoryDao: CategoryDao
 
     companion object{
