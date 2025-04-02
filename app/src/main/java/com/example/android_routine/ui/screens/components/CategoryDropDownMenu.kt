@@ -29,10 +29,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CategoryDropDownMenu() {
+fun CategoryDropDownMenu(
+    selectedCategoryName: String,
+    onCategorySelected: (Int, String) -> Unit) {
+
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf("Work") }
-    val options = listOf("Work", "Personal", "Shopping", "Health")
+    val options = listOf(
+        1 to "Work",
+        2 to "Personal",
+        3 to "Shopping",
+        4 to "Health"
+    )
 
     Box(
         modifier = Modifier
@@ -57,7 +64,7 @@ fun CategoryDropDownMenu() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween // Ensures alignment
             ) {
-                Text(selectedOption, fontWeight = FontWeight.Bold)
+                Text(selectedCategoryName, fontWeight = FontWeight.Bold)
                 Icon(
                     imageVector = Icons.Outlined.KeyboardArrowDown,
                     contentDescription = "Arrow",
@@ -74,12 +81,12 @@ fun CategoryDropDownMenu() {
                 .fillMaxWidth() // Ensure the menu takes full width
                 .background(Color.White)
         ) {
-            options.forEach { option ->
+            options.forEach { (id, name) ->
                 DropdownMenuItem(
-                    text = { Text(option, color = Color(0xB3333333)) },
+                    text = { Text(name, color = Color(0xB3333333)) },
                     onClick = {
-                        selectedOption = option
                         expanded = false
+                        onCategorySelected(id, name)
                     }
                 )
             }

@@ -1,76 +1,94 @@
 package com.example.android_routine.ui.screens.allcategories
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.android_routine.data.model.Category
+import com.example.android_routine.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class CategoryViewModel : ViewModel() {
-    data class CategoryUiState(
-        val categories: List<Category> = emptyList(),
-        val filteredCategories: List<Category> = emptyList(),
-        val searchQuery: String = "",
-        val isLoading: Boolean = false,
-        val error: String? = null
-    )
+class CategoryViewModel(
+    private val repository: CategoryRepository
+):ViewModel() {
+
 
     private val _uiState = MutableStateFlow(CategoryUiState())
     val uiState: StateFlow<CategoryUiState> = _uiState.asStateFlow()
 
-    // Mock data
-    private val _categories = mutableListOf(
-        Category(1, "Personal"),
-        Category(2, "Work"),
-        Category(3, "Health"),
-        Category(4, "Shopping"),
-        Category(5, "House")
-    )
+    sealed class CategoryEvent {
+        data class DeleteCategory(val category: Category) : CategoryEvent()
+        data class UpdateCategory(val category: Category) : CategoryEvent()
+        data class UpdateQuery(val query: String) : CategoryEvent()
+        data class UpdateNewCategoryName(val name: String) : CategoryEvent()
+        object AddCategory : CategoryEvent()
+        object LoadCategories : CategoryEvent()
+    }
 
     init {
-        updateCategories()
+        onEvent(CategoryEvent.LoadCategories)
     }
 
-    fun addCategory(name: String) {
-        val newCategory = Category(
-            id = _categories.maxOfOrNull { it.id }?.plus(1) ?: 1,
-            name = name
-        )
-        _categories.add(newCategory)
-        updateCategories()
-    }
+    fun onEvent(event: CategoryEvent) {
+        when (event) {
+            is CategoryEvent.UpdateQuery -> {
+                _uiState.update { it.copy(query = event.query) }
+                filterCategories()
+            }
 
-    fun deleteCategory(categoryId: Int) {
-        _categories.removeAll { it.id == categoryId }
-        updateCategories()
-    }
+            is CategoryEvent.UpdateNewCategoryName -> {
+                _uiState.update { it.copy(newCategoryName = event.name) }
+            }
 
-    fun searchCategories(query: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                searchQuery = query,
-                filteredCategories = if (query.isEmpty()) {
-                    _categories
-                } else {
-                    _categories.filter { it.name.contains(query, ignoreCase = true) }
+            is CategoryEvent.AddCategory -> {
+                addCategory()
+            }
+
+            is CategoryEvent.LoadCategories -> {
+                loadCategories()
+            }
+            is CategoryEvent.DeleteCategory -> {
+                viewModelScope.launch {
+                    repository.delete(event.category)
                 }
-            )
+            }
+            is CategoryEvent.UpdateCategory -> {
+                viewModelScope.launch {
+                    repository.upsert(event.category)
+                }
+            }
+        }
+    }
+    private fun loadCategories() {
+        viewModelScope.launch {
+            repository.getCategories().collect { all ->
+                _uiState.update { it.copy(allCategories = all) }
+                filterCategories()
+            }
         }
     }
 
-    private fun updateCategories() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                categories = _categories.toList(),
-                filteredCategories = if (currentState.searchQuery.isEmpty()) {
-                    _categories.toList()
-                } else {
-                    _categories.filter {
-                        it.name.contains(currentState.searchQuery, ignoreCase = true)
-                    }
-                }
-            )
+    private fun addCategory() {
+        val name = _uiState.value.newCategoryName.trim()
+        if (name.isNotBlank()) {
+            viewModelScope.launch {
+                repository.upsert(Category(name = name))
+                _uiState.update { it.copy(newCategoryName = "") }
+            }
         }
     }
+
+
+    private fun filterCategories() {
+        val query = _uiState.value.query.lowercase()
+        val filtered = _uiState.value.allCategories.filter {
+            it.name.lowercase().contains(query)
+        }
+        _uiState.update { it.copy(filteredCategories = filtered) }
+    }
+
+
+
 }

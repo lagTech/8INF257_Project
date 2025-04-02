@@ -53,9 +53,28 @@ import com.example.android_routine.ui.screens.components.PrioritySection
 
 
 @Composable
-fun AddTaskScreen(navController: NavController, viewModel: AddTaskViewModel) {
+fun AddTaskScreen(
+    navController: NavController,
+    viewModel: AddTaskViewModel) {
 
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(true) {
+        viewModel.eventFlow.collect { event ->
+            when(event) {
+                is AddTaskViewModel.UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+                is AddTaskViewModel.UiEvent.Navigate -> {
+                    navController.navigate(event.route){
+                        popUpTo(Screen.AddTask.route){inclusive = true}
+                    }
+                }
+            }
+        }
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()){
         Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
@@ -90,7 +109,7 @@ fun AddTaskScreen(navController: NavController, viewModel: AddTaskViewModel) {
 
             TextField(
                 value = uiState.title,
-                onValueChange = { viewModel.updateTitle(it) },
+                onValueChange = { viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateTitle(it)) },
                 label = { Text("Title") },
                 isError = uiState.isError,
                 singleLine = true,
@@ -109,15 +128,25 @@ fun AddTaskScreen(navController: NavController, viewModel: AddTaskViewModel) {
             Text("Category", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 3.dp), color = Color(0xFF2196F3),)
 
             //
-            CategoryDropDownMenu()
+            CategoryDropDownMenu(
+                selectedCategoryName = uiState.categoryName,
+                onCategorySelected = { id, name ->
+                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateCategory(id, name))
+                }
+            )
 
             Text("Date", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
 
             DateTimePickers(
                 context = LocalContext.current,
-                onDateSelected = { viewModel.updateDueDate(it) },
-                onTimeSelected = { viewModel.updateDueTime(it) }
+                onDateSelected = {
+                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueDate(it))
+                },
+                onTimeSelected = {
+                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueTime(it))
+                }
             )
+
 
 
             Text("Priority", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
@@ -130,16 +159,20 @@ fun AddTaskScreen(navController: NavController, viewModel: AddTaskViewModel) {
 
             Text("Notes", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2196F3))
 
-            NotesCard(uiState.notes, viewModel::updateNotes)
+            NotesCard(
+                notes = uiState.notes,
+                onNotesChange = {
+                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateNotes(it))
+                }
+            )
+
 
             Scaffold (
                 floatingActionButton = {
 
                     FloatingActionButton(
                         onClick = {
-                            if (viewModel.addTask()){
-                                navController.popBackStack()
-                            }
+                            viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit)
                         },
                         modifier = Modifier
                             .padding(vertical = 60.dp)

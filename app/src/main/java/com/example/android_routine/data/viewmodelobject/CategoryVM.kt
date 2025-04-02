@@ -1,5 +1,7 @@
 package com.example.android_routine.data.viewmodelobject
 
+import com.example.android_routine.data.model.Category
+
 data class CategoryVM(
     val id: Int = -1,
     val name: String = ""

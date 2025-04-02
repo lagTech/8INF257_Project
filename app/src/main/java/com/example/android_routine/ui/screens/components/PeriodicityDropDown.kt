@@ -1,10 +1,8 @@
 package com.example.android_routine.ui.screens.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material3.DropdownMenuItem
@@ -19,12 +17,10 @@ import com.example.android_routine.ui.screens.addtask.AddTaskViewModel
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class) // Enables Experimental Material API
 @Composable
@@ -69,7 +65,7 @@ fun PeriodicityDropDown(viewModel: AddTaskViewModel) {
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
-                        viewModel.updatePeriodicity(option) // Update ViewModel
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePeriodicity(option)) // Update ViewModel
                         expanded = false
                     }
                 )

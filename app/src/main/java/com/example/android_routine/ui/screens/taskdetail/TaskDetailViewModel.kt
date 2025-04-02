@@ -1,97 +1,116 @@
-package com.example.android_routine.ui.screens.taskdetail
+package com.example.android_routine.ui.screens.detail
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewModelScope
 import com.example.android_routine.data.model.Task
+import com.example.android_routine.data.repository.CategoryRepository
 import com.example.android_routine.data.repository.TaskRepository
-import com.example.android_routine.ui.screens.home.HomeViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.example.android_routine.ui.screens.taskdetail.TaskDetailUiState
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TaskDetailViewModel(
-    private val repository: TaskRepository
-
+    private val taskId: Int,
+    private val taskRepository: TaskRepository,
+    private val categoryRepository: CategoryRepository
 ) : ViewModel() {
-    data class TaskDetailUiState(
-        val task: Task? = null,
-        val isLoading: Boolean = false,
-        val error: String? = null,
-        // Form fields
-        val title: String = "",
-        val category: String = "",
-        val dueTime: String = "",
-        val dueDate: String = "",
-        val notes: String = ""
-    )
 
     private val _uiState = MutableStateFlow(TaskDetailUiState())
     val uiState: StateFlow<TaskDetailUiState> = _uiState.asStateFlow()
 
-    fun loadTask(taskId: Int) {
-        val task = repository.getTask(taskId) // Get task from HomeViewModel
-        task?.let {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    task = it,
-                    title = it.title,
-                    category = it.category,
-                    dueTime = it.dueTime ?: "",
-                    dueDate = it.dueDate ?: "",
-                    notes = it.notes ?: ""
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
+    sealed class UiEvent {
+        data class ShowSnackbar(val message: String) : UiEvent()
+        data class Navigate(val route: String) : UiEvent()
+    }
+
+    sealed class TaskEvent {
+        data class UpdateTitle(val value: String) : TaskEvent()
+        data class UpdateDueDate(val value: String) : TaskEvent()
+        data class UpdateDueTime(val value: String) : TaskEvent()
+        data class UpdateNotes(val value: String) : TaskEvent()
+        data class UpdatePeriodicity(val value: String) : TaskEvent()
+        data class UpdateCategory(val id: Int, val name: String) : TaskEvent()
+        object Submit : TaskEvent()
+    }
+
+    init {
+        loadTask()
+    }
+
+    fun onEvent(event: TaskEvent) {
+        when (event) {
+            is TaskEvent.UpdateTitle -> _uiState.update { it.copy(title = event.value, isError = false) }
+            is TaskEvent.UpdateDueDate -> _uiState.update { it.copy(dueDate = event.value) }
+            is TaskEvent.UpdateDueTime -> _uiState.update { it.copy(dueTime = event.value) }
+            is TaskEvent.UpdateNotes -> _uiState.update { it.copy(notes = event.value) }
+            is TaskEvent.UpdatePeriodicity -> _uiState.update { it.copy(periodicity = event.value) }
+            is TaskEvent.UpdateCategory -> _uiState.update {
+                it.copy(categoryId = event.id, categoryName = event.name)
+            }
+            is TaskEvent.Submit -> updateTask()
+        }
+    }
+
+    private fun loadTask() {
+        viewModelScope.launch {
+            val task = taskRepository.getTaskById(taskId)
+            val categories = categoryRepository.getCategories().first()
+
+            task?.let {
+                val categoryName = categories.find { it.id == task.categoryId }?.name ?: ""
+
+                _uiState.value = TaskDetailUiState(
+                    title = task.title,
+                    categoryId = task.categoryId,
+                    categoryName = categoryName,
+                    dueDate = task.dueDate ?: "",
+                    dueTime = task.dueTime ?: "",
+                    notes = task.notes ?: "",
+                    priority = task.priority ?: "",
+                    periodicity = task.periodicity ?: ""
                 )
             }
         }
     }
 
-    fun saveTask(): Boolean {
-        val currentState = _uiState.value
-        if (currentState.title.isBlank()) {
-            _uiState.update { it.copy(error = "Title cannot be empty") }
-            return false
+    private fun updateTask() {
+        val state = _uiState.value
+
+        if (state.title.isBlank()) {
+            _uiState.update { it.copy(isError = true, errorMessage = "Title cannot be empty") }
+            return
         }
 
-        // Get the current task
-        val currentTask = currentState.task
-        if (currentTask != null) {
-            val updatedTask = currentTask.copy(
-                title = currentState.title,
-                category = currentState.category,
-                dueTime = currentState.dueTime.takeIf { it.isNotBlank() },
-                dueDate = currentState.dueDate.takeIf { it.isNotBlank() },
-                notes = currentState.notes.takeIf { it.isNotBlank() }
+        val formattedDueDate = if (state.dueDate.isNotBlank()) {
+            try {
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val parsed = inputFormat.parse(state.dueDate)
+                inputFormat.format(parsed ?: Date())
+            } catch (e: Exception) {
+                null
+            }
+        } else null
+
+        viewModelScope.launch {
+            val updated = Task(
+                id = taskId,
+                title = state.title,
+                categoryId = state.categoryId,
+                dueTime = state.dueTime.takeIf { it.isNotBlank() },
+                dueDate = formattedDueDate,
+                notes = state.notes.takeIf { it.isNotBlank() },
+                priority = state.priority,
+                periodicity = state.periodicity,
+                isCompleted = false
             )
-
-            // Update the task in repository
-            repository.updateTask(updatedTask)
-            return true
+            taskRepository.upsert(updated)
+            _eventFlow.emit(UiEvent.ShowSnackbar("Task updated successfully"))
+            _eventFlow.emit(UiEvent.Navigate("allTasks"))
         }
-        return false
-    }
-
-    fun updateTitle(title: String) {
-        _uiState.update { it.copy(title = title) }
-    }
-
-    fun updateCategory(category: String) {
-        _uiState.update { it.copy(category = category) }
-    }
-
-    fun updateDueTime(dueTime: String) {
-        _uiState.update { it.copy(dueTime = dueTime) }
-    }
-
-    fun updateDueDate(dueDate: String) {
-        _uiState.update { it.copy(dueDate = dueDate) }
-    }
-
-    fun updateNotes(notes: String) {
-        _uiState.update { it.copy(notes = notes) }
-    }
-
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
     }
 }

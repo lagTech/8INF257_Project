@@ -2,88 +2,112 @@ package com.example.android_routine.ui.screens.addtask
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import com.example.android_routine.data.model.Task
 import com.example.android_routine.data.repository.TaskRepository
-import com.example.android_routine.ui.screens.home.HomeViewModel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-class AddTaskViewModel(private val repository: TaskRepository) : ViewModel() {
-
-    // UI State for Add Task Screen
-    data class AddTaskUiState(
-        val title: String = "",
-        val category: String = "Work",
-        val dueTime: String = "",
-        val dueDate: String = "",
-        val priority: String = "Daily",
-        val periodicity: String = "Once",
-        val notes: String = "",
-        val isError: Boolean = false,
-        val errorMessage: String? = null
-    )
+class AddTaskViewModel(
+    private val repository: TaskRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddTaskUiState())
-    val uiState: StateFlow<AddTaskUiState> = _uiState
+    val uiState: StateFlow<AddTaskUiState> = _uiState.asStateFlow()
 
-    fun updateTitle(title: String) {
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
+    // Sealed class for one-time UI events
+    sealed class UiEvent {
+        data class ShowSnackbar(val message: String) : UiEvent()
+        data class Navigate(val route: String) : UiEvent() // ← new
+    }
+
+    // Sealed class for user actions
+    sealed class TaskEvent {
+        data class UpdateTitle(val title: String) : TaskEvent()
+        data class UpdateDueDate(val dueDate: String) : TaskEvent()
+        data class UpdateDueTime(val dueTime: String) : TaskEvent()
+        data class UpdatePeriodicity(val periodicity: String) : TaskEvent()
+        data class UpdateNotes(val notes: String) : TaskEvent()
+        data class UpdateCategory(val id: Int, val name: String) : TaskEvent()
+        object Submit : TaskEvent()
+    }
+
+    fun onEvent(event: TaskEvent) {
+        when (event) {
+            is TaskEvent.UpdateTitle -> updateTitle(event.title)
+            is TaskEvent.UpdateDueDate -> updateDueDate(event.dueDate)
+            is TaskEvent.UpdateDueTime -> updateDueTime(event.dueTime)
+            is TaskEvent.UpdatePeriodicity -> updatePeriodicity(event.periodicity)
+            is TaskEvent.UpdateNotes -> updateNotes(event.notes)
+            is TaskEvent.UpdateCategory -> updateCategory(event.id, event.name)
+            is TaskEvent.Submit -> submitTask()
+        }
+    }
+
+    private fun updateTitle(title: String) {
         _uiState.update { it.copy(title = title, isError = false) }
     }
 
-    fun updateDueTime(dueTime: String) {
-        _uiState.update { it.copy(dueTime = dueTime) }
-    }
-
-    fun updateDueDate(dueDate: String) {
+    private fun updateDueDate(dueDate: String) {
         _uiState.update { it.copy(dueDate = dueDate) }
     }
 
-    fun updatePeriodicity(periodicity: String) {
+    private fun updateDueTime(dueTime: String) {
+        _uiState.update { it.copy(dueTime = dueTime) }
+    }
+
+    private fun updatePeriodicity(periodicity: String) {
         _uiState.update { it.copy(periodicity = periodicity) }
     }
 
-    fun updateNotes(notes: String) {
+    private fun updateNotes(notes: String) {
         _uiState.update { it.copy(notes = notes) }
     }
 
-    // Validate and add a new task
-    fun addTask(): Boolean {
-        val currentState = _uiState.value
-        if (currentState.title.isBlank()) {
+    private fun updateCategory(id: Int, name: String) {
+        _uiState.update { it.copy(categoryId = id, categoryName = name) }
+    }
+
+    private fun submitTask() {
+        val state = _uiState.value
+
+        if (state.title.isBlank()) {
             _uiState.update { it.copy(isError = true, errorMessage = "Title cannot be empty") }
-            return false
+            return
         }
-        // Format dueDate correctly
-        val formattedDueDate = if (currentState.dueDate.isNotBlank()) {
+
+        val formattedDueDate = if (state.dueDate.isNotBlank()) {
             try {
                 val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val parsedDate = inputFormat.parse(currentState.dueDate)
-                inputFormat.format(parsedDate ?: Date()) // Ensures correct format
+                val parsedDate = inputFormat.parse(state.dueDate)
+                inputFormat.format(parsedDate ?: Date())
             } catch (e: Exception) {
-                null // If parsing fails, store null
+                null
             }
         } else null
 
         viewModelScope.launch {
             val newTask = Task(
-                id = System.currentTimeMillis().toInt(), // Unique ID based on timestamp
-                title = currentState.title,
-                category = currentState.category,
-                dueTime = currentState.dueTime.takeIf { it.isNotBlank() },
+                id = null,
+                title = state.title,
+                categoryId = state.categoryId,
+                dueTime = state.dueTime.takeIf { it.isNotBlank() },
                 dueDate = formattedDueDate,
-                notes = currentState.notes.takeIf { it.isNotBlank() },
-                priority = currentState.priority,
-                periodicity = currentState.periodicity,
+                notes = state.notes.takeIf { it.isNotBlank() },
+                priority = state.priority,
+                periodicity = state.periodicity,
+                isCompleted = false
             )
 
-            repository.addTask(newTask)
-        }
-        return true
-    }
+            repository.upsert(newTask)
 
+            _eventFlow.emit(UiEvent.ShowSnackbar("Task added successfully"))
+            _eventFlow.emit(UiEvent.Navigate(Screen.AllTasks.route))
+
+        }
+    }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,10 +35,25 @@ import com.example.android_routine.ui.screens.components.TaskItem
 
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel ) {
 
     val uiState by viewModel.uiState.collectAsState()
-    val searchQuery by remember { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(true) {
+        viewModel.eventFlow.collect { event ->
+            when (event) {
+                is HomeViewModel.UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+                is HomeViewModel.UiEvent.NavigateToAllTasks -> {
+                    navController.navigate("all_tasks") // Update with actual route
+                }
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()
         .padding(vertical = 40.dp, horizontal = 15.dp)){
@@ -45,7 +61,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
 
             TextField(
                 value = uiState.searchQuery,
-                onValueChange = {viewModel.searchTasks(it)},
+                onValueChange = {viewModel.onEvent(HomeViewModel.HomeEvent.UpdateSearch(it))},
                 placeholder = { Text(
                     text = "Search for Tasks, Events",
                     color = Color(0xFF333333),
@@ -116,16 +132,18 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
 
                 LazyColumn {
                     items(
-                        items = uiState.filteredTasks.filter { it.isToday },
-                        key = { task -> task.id  }
+                        uiState.todayTasks,
+                        key = { task -> task.id !! }
                         ) { task ->
                         TaskItem(
                             task = task,
                             onTaskClick = {
-                                navController.navigate(Screen.TaskDetail.createRoute(task.id)) },
-                            onDelete = { viewModel.deleteTask(task.id) },
+                                navController.navigate(Screen.TaskDetail.createRoute(task.id!!)) },
+                            onDelete = {
+                                viewModel.onEvent(HomeViewModel.HomeEvent.DeleteTask(task.id ?: return@TaskItem))
+                                       },
                             onRadioClick = {
-                                viewModel.toggleTaskCompletion(task.id)
+                                viewModel.onEvent(HomeViewModel.HomeEvent.ToggleComplete(task.id ?: return@TaskItem))
                             }
                         )
                     }

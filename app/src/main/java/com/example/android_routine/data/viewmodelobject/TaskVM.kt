@@ -1,5 +1,7 @@
 package com.example.android_routine.data.viewmodelobject
 
+import com.example.android_routine.data.model.Task
+
 data class TaskVM(
     val id: Int = -1,
     val title: String = "",

@@ -42,10 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.android_routine.ui.screens.components.BottomNav2
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 @Composable
 fun AllCategoriesScreen(
-    viewModel: CategoryViewModel = viewModel()
+    navController: NavController,
+    viewModel: CategoryViewModel
 ) {
     // State for controlling the modal visibility
     var showAddCategoryDialog by remember { mutableStateOf(false) }
@@ -59,8 +61,8 @@ fun AllCategoriesScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             TextField(
-                value = uiState.searchQuery,
-                onValueChange = {viewModel.searchCategories(it)},
+                value = uiState.query,
+                onValueChange = {viewModel.onEvent(CategoryViewModel.CategoryEvent.UpdateQuery(it))},
                 placeholder = {
                     Text(
                         text = "Search for Categories",
@@ -107,7 +109,7 @@ fun AllCategoriesScreen(
                 LazyColumn {
                     items(
                         items = uiState.filteredCategories,
-                        key = {it.id}
+                        key = { it.id!! }
                     ) {category ->
                         TextField(
                             value = category.name,
@@ -184,7 +186,9 @@ fun AllCategoriesScreen(
                     newCategoryName = newCategoryName,
                     onNameChange = { newCategoryName = it },
                     onCreateCategory = {
-                        viewModel.addCategory(newCategoryName)
+                        viewModel.onEvent(CategoryViewModel.CategoryEvent.UpdateNewCategoryName(newCategoryName))
+                        viewModel.onEvent(CategoryViewModel.CategoryEvent.AddCategory)
+
                         showAddCategoryDialog = false
                         newCategoryName = ""
                     }
@@ -196,8 +200,3 @@ fun AllCategoriesScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AllCategoriesScreenPreview(){
-    AllCategoriesScreen()
-}

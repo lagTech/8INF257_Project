@@ -4,13 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android_routine.data.model.Task
 import com.example.android_routine.data.repository.TaskRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class HomeViewModel(
     private val repository: TaskRepository
@@ -20,51 +24,104 @@ class HomeViewModel(
         val filteredTasks: List<Task> = emptyList(),
         val searchQuery: String = "",
         val isLoading: Boolean = false,
-        val error: String? = null
+        val error: String? = null,
+        val todayTasks: List<Task> = emptyList()
+
     )
+    sealed class HomeEvent {
+        data class ToggleComplete(val taskId: Int) : HomeEvent()
+        data class DeleteTask(val taskId: Int) : HomeEvent()
+        data class UpdateSearch(val query: String) : HomeEvent()
+        object Load : HomeEvent()
+    }
+    sealed class UiEvent {
+        data class ShowSnackbar(val message: String) : UiEvent()
+        object NavigateToAllTasks : UiEvent()
+    }
 
-     private val allTasks: StateFlow<List<Task>> = repository.getAllTasks()
-         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-     private val _uiState = MutableStateFlow(HomeUiState())
-     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
+    private val allTasks: StateFlow<List<Task>> = repository.getTasks()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
      init {
-         observeTasks()
+         onEvent(HomeEvent.Load)
      }
 
-     /** Collects tasks from repository and updates UI state automatically */
-     private fun observeTasks() {
-         viewModelScope.launch {
-             allTasks.collect { tasks ->
-                 _uiState.update { currentState ->
-                     val filteredTasks = if (currentState.searchQuery.isEmpty()) tasks else {
-                         tasks.filter { it.title.contains(currentState.searchQuery, ignoreCase = true) ||
-                                 it.category.contains(currentState.searchQuery, ignoreCase = true) }
-                     }
-                     currentState.copy(tasks = tasks, filteredTasks = filteredTasks)
-                 }
-             }
-         }
-     }
+    fun onEvent(event: HomeEvent) {
+        when (event) {
+            is HomeEvent.ToggleComplete -> toggleTaskCompletion(event.taskId)
+            is HomeEvent.DeleteTask -> deleteTask(event.taskId)
+            is HomeEvent.UpdateSearch -> updateSearchQuery(event.query)
+            is HomeEvent.Load -> observeTasks()
+        }
+    }
 
-     /** Search for tasks */
-     fun searchTasks(query: String) {
-         _uiState.update { currentState ->
-             val filteredTasks = if (query.isEmpty()) allTasks.value else {
-                 allTasks.value.filter { it.title.contains(query, ignoreCase = true) ||
-                         it.category.contains(query, ignoreCase = true) }
-             }
-             currentState.copy(searchQuery = query, filteredTasks = filteredTasks)
-         }
-     }
+    private fun observeTasks() {
+        viewModelScope.launch {
+            allTasks.collect { tasks ->
+                _uiState.update { current ->
+                    val query = current.searchQuery
+                    val filtered = filterTasks(tasks, query)
+                    val todayTasks = tasks.filter { isToday(it) }
+                    current.copy(tasks = tasks, filteredTasks = filtered, todayTasks = todayTasks)
 
+                }
+            }
+        }
+    }
 
+    private fun updateSearchQuery(query: String) {
+        _uiState.update { current ->
+            val filtered = filterTasks(current.tasks, query)
+            current.copy(searchQuery = query, filteredTasks = filtered)
+        }
+    }
 
+    private fun filterTasks(tasks: List<Task>, query: String): List<Task> {
+        return if (query.isBlank()) {
+            tasks
+        } else {
+            tasks.filter {
+                it.title.contains(query, ignoreCase = true) ||
+                        it.categoryId?.toString()?.contains(query) == true
+            }
+        }
+    }
 
+    private fun toggleTaskCompletion(taskId: Int) {
+        viewModelScope.launch {
+            val task = repository.getTaskById(taskId)
+            if (task != null) {
+                val updated = task.copy(isCompleted = !task.isCompleted)
+                repository.upsert(updated)
+                _eventFlow.emit(UiEvent.ShowSnackbar("Task updated"))
+            }
+        }
+    }
 
+    private fun deleteTask(taskId: Int) {
+        viewModelScope.launch {
+            repository.getTaskById(taskId)?.let {
+                repository.delete(it)
+                _eventFlow.emit(UiEvent.ShowSnackbar("Task deleted"))
+            }
+        }
+    }
 
-
+    private fun isToday(task: Task): Boolean {
+        return try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val dueDate = LocalDate.parse(task.dueDate ?: "", formatter)
+            dueDate == LocalDate.now()
+        } catch (e: Exception) {
+            false
+        }
+    }
 
 
 
