@@ -77,18 +77,33 @@ class AddTaskViewModel(
 
         if (state.title.isBlank()) {
             _uiState.update { it.copy(isError = true, errorMessage = "Title cannot be empty") }
+            viewModelScope.launch {
+                _eventFlow.emit(UiEvent.ShowSnackbar("Please enter a task title"))
+            }
+            return
+        }
+        if (state.categoryId == null) {
+            viewModelScope.launch {
+                _eventFlow.emit(UiEvent.ShowSnackbar("Please select a category"))
+            }
             return
         }
 
-        val formattedDueDate = if (state.dueDate.isNotBlank()) {
-            try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val parsedDate = inputFormat.parse(state.dueDate)
-                inputFormat.format(parsedDate ?: Date())
-            } catch (e: Exception) {
-                null
+        if (state.dueDate.isBlank()) {
+            viewModelScope.launch {
+                _eventFlow.emit(UiEvent.ShowSnackbar("Please select a due date"))
             }
-        } else null
+            return
+        }
+
+        val formattedDueDate = try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val parsedDate = inputFormat.parse(state.dueDate)
+            inputFormat.format(parsedDate ?: Date())
+        } catch (e: Exception) {
+            null
+        }
+
 
         viewModelScope.launch {
             val newTask = Task(

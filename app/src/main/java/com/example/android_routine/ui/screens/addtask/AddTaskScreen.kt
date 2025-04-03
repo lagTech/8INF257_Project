@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import com.example.android_routine.ui.screens.components.BottomNav
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -76,140 +77,195 @@ fun AddTaskScreen(
     }
 
 
-    Box(modifier = Modifier.fillMaxSize()){
-        Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ){
-
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color(0xFF2196F3)
-                    )
-                }
-
-            }
-
-            Text(
-                "Add task",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2196F3),
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-
-
-            TextField(
-                value = uiState.title,
-                onValueChange = { viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateTitle(it)) },
-                label = { Text("Title") },
-                isError = uiState.isError,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0x142196F3),
-                    unfocusedContainerColor = Color(0x142196F3),
-                    focusedIndicatorColor = Color.Green,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    unfocusedLabelColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(10.dp),
-                supportingText = { uiState.errorMessage?.let { Text(it, color = Color.Red) } }
-            )
-
-            Text("Category", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 3.dp), color = Color(0xFF2196F3),)
-
-            //
-            CategoryDropDownMenu(
-                selectedCategoryName = uiState.categoryName,
-                onCategorySelected = { id, name ->
-                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateCategory(id, name))
-                }
-            )
-
-            Text("Date", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
-
-            DateTimePickers(
-                context = LocalContext.current,
-                onDateSelected = {
-                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueDate(it))
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit)
                 },
-                onTimeSelected = {
-                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueTime(it))
-                }
-            )
-
-
-
-            Text("Priority", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
-
-            PrioritySection()
-
-            Text("Periodicity", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 5.dp), color = Color(0xFF2196F3))
-
-            PeriodicityDropDown(viewModel)
-
-            Text("Notes", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF2196F3))
-
-            NotesCard(
-                notes = uiState.notes,
-                onNotesChange = {
-                    viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateNotes(it))
-                }
-            )
-
-
-            Scaffold (
-                floatingActionButton = {
-
-                    FloatingActionButton(
-                        onClick = {
-                            viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit)
-                        },
-                        modifier = Modifier
-                            .padding(vertical = 60.dp)
-                            .offset(y = (-28).dp),
-                        containerColor = Color(0xFF2196F3),
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        elevation = FloatingActionButtonDefaults.elevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp
-                        ),
-                        content = {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = "Add",
-                                tint = Color.White
-                            )
-                        }
-                    )
-                }
-
+                modifier = Modifier
+                    .padding(end = 16.dp, bottom = 80.dp),
+                containerColor = Color(0xFF2196F3),
+                shape = CircleShape
             ) {
-                    paddingValues ->
-                Box(modifier = Modifier.fillMaxSize().padding(paddingValues))
-
+                Icon(Icons.Default.Check, contentDescription = "Add", tint = Color.White)
             }
-
         }
+    ) { paddingValues ->
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-        ){
-            BottomNav2()
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
+            ) {
+                // ... rest of your existing UI
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFF2196F3)
+                        )
+                    }
+
+                }
+
+                Text(
+                    "Add task",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2196F3),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+
+                TextField(
+                    value = uiState.title,
+                    onValueChange = { viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateTitle(it)) },
+                    label = { Text("Title") },
+                    isError = uiState.isError,
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(0x142196F3),
+                        unfocusedContainerColor = Color(0x142196F3),
+                        focusedIndicatorColor = Color.Green,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        unfocusedLabelColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    supportingText = { uiState.errorMessage?.let { Text(it, color = Color.Red) } }
+                )
+
+                Text(
+                    "Category",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 3.dp),
+                    color = Color(0xFF2196F3),
+                )
+
+                //
+                CategoryDropDownMenu(
+                    selectedCategoryName = uiState.categoryName,
+                    onCategorySelected = { id, name ->
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateCategory(id, name))
+                    }
+                )
+
+                Text(
+                    "Date",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 5.dp),
+                    color = Color(0xFF2196F3)
+                )
+
+                DateTimePickers(
+                    context = LocalContext.current,
+                    onDateSelected = {
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueDate(it))
+                    },
+                    onTimeSelected = {
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueTime(it))
+                    }
+                )
+
+
+
+                Text(
+                    "Priority",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 5.dp),
+                    color = Color(0xFF2196F3)
+                )
+
+                PrioritySection()
+
+                Text(
+                    "Periodicity",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 5.dp),
+                    color = Color(0xFF2196F3)
+                )
+
+                PeriodicityDropDown(viewModel)
+
+                Text(
+                    "Notes",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = Color(0xFF2196F3)
+                )
+
+                NotesCard(
+                    notes = uiState.notes,
+                    onNotesChange = {
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateNotes(it))
+                    }
+                )
+
+
+                Scaffold(
+                    floatingActionButton = {
+
+                        FloatingActionButton(
+                            onClick = {
+                                viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit)
+                            },
+                            modifier = Modifier
+                                .padding(vertical = 60.dp)
+                                .offset(y = (-28).dp),
+                            containerColor = Color(0xFF2196F3),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            elevation = FloatingActionButtonDefaults.elevation(
+                                defaultElevation = 0.dp,
+                                pressedElevation = 0.dp
+                            ),
+                            content = {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = "Add",
+                                    tint = Color.White
+                                )
+                            }
+                        )
+                    }
+
+                ) { paddingValues ->
+                    Box(modifier = Modifier.fillMaxSize().padding(paddingValues))
+
+                }
+
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            ) {
+                BottomNav2()
+            }
         }
-    }
 
 
-}
+    }}
 
 
 
