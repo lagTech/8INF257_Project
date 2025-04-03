@@ -20,8 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PrioritySection() {
-    var selectedOption by remember { mutableStateOf("Moyenne") }
+fun PrioritySection(
+    selectedPriority: String,
+    onPriorityChange: (String) -> Unit
+) {
 
     val options = listOf("Faible", "Moyenne", "Elevee")
 
@@ -36,14 +38,14 @@ fun PrioritySection() {
         options.forEach { option ->
             Row(
                 modifier = Modifier
-                    .clickable { selectedOption = option } // Click anywhere to select
+                    .clickable { onPriorityChange(option)} // Click anywhere to select
                     .padding(end = 12.dp), // Spacing between items
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
                 RadioButton(
-                    selected = (selectedOption == option),
-                    onClick = { selectedOption = option },
+                    selected = (selectedPriority == option),
+                    onClick = { onPriorityChange(option)},
                     colors = RadioButtonDefaults.colors(
                         selectedColor = Color(0xFF2196F3),
                         unselectedColor = Color.LightGray

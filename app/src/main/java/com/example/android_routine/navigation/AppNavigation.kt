@@ -23,6 +23,7 @@ import com.example.android_routine.ui.screens.taskdetail.TaskDetailScreen
 import com.example.android_routine.ui.screens.taskdetail.TaskDetailViewModelFactory
 import com.example.android_routine.ui.screens.addtask.AddTaskScreen
 import com.example.android_routine.ui.screens.allcategories.CategoryViewModel
+import com.example.android_routine.ui.screens.allcategories.CategoryViewModelFactory
 import com.example.android_routine.ui.screens.detail.TaskDetailViewModel
 
 
@@ -57,15 +58,20 @@ fun AppNavigation() {
             val addTaskViewModel: AddTaskViewModel = viewModel(
                 factory = AddTaskViewModelFactory(taskRepository)
             )
-            AddTaskScreen(navController, addTaskViewModel)
+            val categoryViewModel: CategoryViewModel = viewModel(
+                factory = CategoryViewModelFactory(categoryRepository)
+            )
+
+            AddTaskScreen(navController, addTaskViewModel, categoryViewModel)
         }
         composable(Screen.AllTasks.route)
         { AllTasksScreen(navController, allTasksViewModel) }
 
         composable(Screen.AllCategories.route) {
-            val categoryViewModel: CategoryViewModel = viewModel {
-                CategoryViewModel(categoryRepository)
-            }
+            val categoryViewModel: CategoryViewModel = viewModel(
+                factory = CategoryViewModelFactory(categoryRepository)
+            )
+
             AllCategoriesScreen(navController, categoryViewModel)
         }
 
@@ -77,7 +83,11 @@ fun AppNavigation() {
             val viewModel: TaskDetailViewModel = viewModel(
                 factory = TaskDetailViewModelFactory(taskId, taskRepository, categoryRepository)
             )
-            TaskDetailScreen(navController, viewModel)
+            val categoryViewModel: CategoryViewModel = viewModel (
+                factory = CategoryViewModelFactory(categoryRepository)
+            )
+
+            TaskDetailScreen(navController, viewModel,  categoryViewModel )
         }
     }
 

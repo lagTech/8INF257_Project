@@ -24,17 +24,19 @@ import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class) // Enables Experimental Material API
 @Composable
-fun PeriodicityDropDown(viewModel: AddTaskViewModel) {
-    val periodicityOptions = listOf("Daily", "Just today", "Weekly", "Monthly", "Yearly")
+fun PeriodicityDropDown(
+    selectedPeriodicity: String,
+    onPeriodicitySelected: (String) -> Unit
+) {
+    val periodicityOptions = listOf( "once","Daily", "Weekly", "Monthly", "Yearly")
     var expanded by remember { mutableStateOf(false) }
-    val selectedPeriodicity by viewModel.uiState.collectAsState()
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it }
     ) {
         TextField(
-            value = selectedPeriodicity.periodicity, // Fix: Access periodicity correctly
+            value = selectedPeriodicity,
             onValueChange = {},
             readOnly = true,
             label = { Text("Select Periodicity") },
@@ -65,8 +67,8 @@ fun PeriodicityDropDown(viewModel: AddTaskViewModel) {
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
-                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePeriodicity(option)) // Update ViewModel
                         expanded = false
+                        onPeriodicitySelected(option)
                     }
                 )
             }

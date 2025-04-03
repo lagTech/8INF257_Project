@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,8 +35,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.android_routine.data.model.Category
+import com.example.android_routine.ui.screens.allcategories.CategoryViewModel
 import com.example.android_routine.ui.screens.components.BottomNav
+import com.example.android_routine.ui.screens.components.BottomNav2
 import com.example.android_routine.ui.screens.components.CategoryDropDownMenu
+import com.example.android_routine.ui.screens.components.PeriodicityDropDown
 import com.example.android_routine.ui.screens.components.PrioritySection
 import com.example.android_routine.ui.screens.detail.TaskDetailViewModel
 
@@ -43,8 +48,10 @@ import com.example.android_routine.ui.screens.detail.TaskDetailViewModel
 @Composable
 fun TaskDetailScreen(
     navController: NavController,
-    viewModel: TaskDetailViewModel
+    viewModel: TaskDetailViewModel,
+    categoryViewModel: CategoryViewModel
 ) {
+    val categoryUiState by categoryViewModel.uiState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -72,7 +79,10 @@ fun TaskDetailScreen(
                 onClick = {
                     viewModel.onEvent(TaskDetailViewModel.TaskEvent.Submit)
                 },
-                containerColor = Color(0xFF2196F3)
+                modifier = Modifier
+                    .padding(end = 16.dp, bottom = 80.dp),
+                containerColor = Color(0xFF2196F3),
+                shape = CircleShape
             ){
                 Icon(Icons.Outlined.Done, contentDescription = "Save", tint = Color.White)
             }
@@ -139,7 +149,8 @@ fun TaskDetailScreen(
                     selectedCategoryName = uiState.categoryName,
                     onCategorySelected = { id, name ->
                         viewModel.onEvent(TaskDetailViewModel.TaskEvent.UpdateCategory(id, name))
-                    }
+                    },
+                    categories = categoryUiState.allCategories
                 )
 
 
@@ -199,6 +210,21 @@ fun TaskDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                Text(
+                    "Periodicity",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 5.dp),
+                    color = Color(0xFF2196F3)
+                )
+
+                PeriodicityDropDown(
+                    selectedPeriodicity = uiState.periodicity,
+                    onPeriodicitySelected = {
+                        viewModel.onEvent(TaskDetailViewModel.TaskEvent.UpdatePeriodicity(it))
+                    }
+                )
+
                 Text("Description")
                 TextField(
                     value = uiState.notes,
@@ -226,14 +252,19 @@ fun TaskDetailScreen(
                     color = Color(0xFF2196F3)
                 )
 
-                PrioritySection()
+                PrioritySection(
+                    selectedPriority = uiState.priority,
+                    onPriorityChange = {
+                        viewModel.onEvent(TaskDetailViewModel.TaskEvent.UpdatePriority(it))
+                    }
+                )
 
 
             }
 
             // Bottom Navigation
             Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-                BottomNav(navController)
+                BottomNav2()
             }
         }
     }

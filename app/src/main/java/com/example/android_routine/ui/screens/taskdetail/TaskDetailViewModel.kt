@@ -34,6 +34,7 @@ class TaskDetailViewModel(
         data class UpdateDueTime(val value: String) : TaskEvent()
         data class UpdateNotes(val value: String) : TaskEvent()
         data class UpdatePeriodicity(val value: String) : TaskEvent()
+        data class UpdatePriority(val value: String) : TaskEvent()
         data class UpdateCategory(val id: Int, val name: String) : TaskEvent()
         object Submit : TaskEvent()
     }
@@ -49,6 +50,7 @@ class TaskDetailViewModel(
             is TaskEvent.UpdateDueTime -> _uiState.update { it.copy(dueTime = event.value) }
             is TaskEvent.UpdateNotes -> _uiState.update { it.copy(notes = event.value) }
             is TaskEvent.UpdatePeriodicity -> _uiState.update { it.copy(periodicity = event.value) }
+            is TaskEvent.UpdatePriority -> _uiState.update { it.copy(priority = event.value) }
             is TaskEvent.UpdateCategory -> _uiState.update {
                 it.copy(categoryId = event.id, categoryName = event.name)
             }

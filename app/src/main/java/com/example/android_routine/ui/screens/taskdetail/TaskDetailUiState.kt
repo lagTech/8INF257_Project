@@ -4,7 +4,7 @@ package com.example.android_routine.ui.screens.taskdetail
 data class TaskDetailUiState(
     val title: String = "",
     val categoryId: Int? = null,
-    val categoryName: String = "Work",
+    val categoryName: String = "Select Category",
     val dueTime: String = "",
     val dueDate: String = "",
     val priority: String = "Daily",

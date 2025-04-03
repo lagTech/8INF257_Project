@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import com.example.android_routine.data.repository.TaskRepository
+import com.example.android_routine.ui.screens.allcategories.CategoryViewModel
 import com.example.android_routine.ui.screens.components.CategoryDropDownMenu
 import com.example.android_routine.ui.screens.components.DateItem
 import com.example.android_routine.ui.screens.components.DateTimePickers
@@ -56,8 +57,10 @@ import com.example.android_routine.ui.screens.components.PrioritySection
 @Composable
 fun AddTaskScreen(
     navController: NavController,
-    viewModel: AddTaskViewModel) {
+    viewModel: AddTaskViewModel,
+    categoryViewModel: CategoryViewModel) {
 
+    val categoryUiState by categoryViewModel.uiState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -165,7 +168,8 @@ fun AddTaskScreen(
                     selectedCategoryName = uiState.categoryName,
                     onCategorySelected = { id, name ->
                         viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateCategory(id, name))
-                    }
+                    },
+                    categories = categoryUiState.allCategories
                 )
 
                 Text(
@@ -196,7 +200,12 @@ fun AddTaskScreen(
                     color = Color(0xFF2196F3)
                 )
 
-                PrioritySection()
+                PrioritySection(
+                    selectedPriority = uiState.priority,
+                    onPriorityChange = {
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePriority(it))
+                    }
+                )
 
                 Text(
                     "Periodicity",
@@ -206,7 +215,12 @@ fun AddTaskScreen(
                     color = Color(0xFF2196F3)
                 )
 
-                PeriodicityDropDown(viewModel)
+                PeriodicityDropDown(
+                    selectedPeriodicity = uiState.periodicity,
+                    onPeriodicitySelected = {
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePeriodicity(it))
+                    }
+                )
 
                 Text(
                     "Notes",

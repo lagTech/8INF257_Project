@@ -31,6 +31,7 @@ class AddTaskViewModel(
         data class UpdateDueDate(val dueDate: String) : TaskEvent()
         data class UpdateDueTime(val dueTime: String) : TaskEvent()
         data class UpdatePeriodicity(val periodicity: String) : TaskEvent()
+        data class UpdatePriority(val priority: String): TaskEvent()
         data class UpdateNotes(val notes: String) : TaskEvent()
         data class UpdateCategory(val id: Int, val name: String) : TaskEvent()
         object Submit : TaskEvent()
@@ -42,6 +43,7 @@ class AddTaskViewModel(
             is TaskEvent.UpdateDueDate -> updateDueDate(event.dueDate)
             is TaskEvent.UpdateDueTime -> updateDueTime(event.dueTime)
             is TaskEvent.UpdatePeriodicity -> updatePeriodicity(event.periodicity)
+            is TaskEvent.UpdatePriority -> updatePriority(event.priority)
             is TaskEvent.UpdateNotes -> updateNotes(event.notes)
             is TaskEvent.UpdateCategory -> updateCategory(event.id, event.name)
             is TaskEvent.Submit -> submitTask()
@@ -64,6 +66,10 @@ class AddTaskViewModel(
         _uiState.update { it.copy(periodicity = periodicity) }
     }
 
+    private fun updatePriority(priority: String){
+        _uiState.update { it.copy(priority = priority) }
+    }
+
     private fun updateNotes(notes: String) {
         _uiState.update { it.copy(notes = notes) }
     }
@@ -71,6 +77,8 @@ class AddTaskViewModel(
     private fun updateCategory(id: Int, name: String) {
         _uiState.update { it.copy(categoryId = id, categoryName = name) }
     }
+
+
 
     private fun submitTask() {
         val state = _uiState.value
