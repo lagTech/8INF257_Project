@@ -106,7 +106,7 @@ fun AddTaskScreen(
                     .fillMaxSize()
                     .padding(12.dp)
             ) {
-                // ... rest of your existing UI
+
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -249,7 +249,7 @@ fun AddTaskScreen(
                                 .padding(vertical = 60.dp)
                                 .offset(y = (-28).dp),
                             containerColor = Color(0xFF2196F3),
-                            shape = androidx.compose.foundation.shape.CircleShape,
+                            shape = CircleShape,
                             elevation = FloatingActionButtonDefaults.elevation(
                                 defaultElevation = 0.dp,
                                 pressedElevation = 0.dp

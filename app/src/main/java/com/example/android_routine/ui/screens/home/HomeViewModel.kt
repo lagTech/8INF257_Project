@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android_routine.data.model.Task
 import com.example.android_routine.data.repository.TaskRepository
+import com.example.android_routine.data.viewmodelobject.TaskVM
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,6 +40,8 @@ class HomeViewModel(
         object NavigateToAllTasks : UiEvent()
     }
 
+    private var fullTaskList: List<TaskVM> = emptyList()
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -67,8 +70,9 @@ class HomeViewModel(
                 _uiState.update { current ->
                     val query = current.searchQuery
                     val filtered = filterTasks(tasks, query)
-                    val todayTasks = tasks.filter { isToday(it) }
-                    current.copy(tasks = tasks, filteredTasks = filtered, todayTasks = todayTasks)
+                    val allTodayTasks = tasks.filter { isToday(it) }
+                    val filteredTodayTasks = filterTasks(allTodayTasks, query)
+                    current.copy(tasks = tasks, filteredTasks = filtered, todayTasks = filteredTodayTasks)
 
                 }
             }
@@ -78,7 +82,9 @@ class HomeViewModel(
     private fun updateSearchQuery(query: String) {
         _uiState.update { current ->
             val filtered = filterTasks(current.tasks, query)
-            current.copy(searchQuery = query, filteredTasks = filtered)
+            val filteredTodayTasks = filterTasks(current.tasks.filter { isToday(it) }, query)
+
+            current.copy(searchQuery = query, filteredTasks = filtered, todayTasks = filteredTodayTasks)
         }
     }
 

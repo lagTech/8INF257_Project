@@ -129,7 +129,7 @@ class AddTaskViewModel(
             repository.upsert(newTask)
 
             _eventFlow.emit(UiEvent.ShowSnackbar("Task added successfully"))
-            _eventFlow.emit(UiEvent.Navigate(Screen.AllTasks.route))
+            _eventFlow.emit(UiEvent.Navigate(Screen.Home.route))
 
         }
     }

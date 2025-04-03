@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.android_routine.data.viewmodelobject.TaskVM
@@ -23,14 +24,17 @@ import java.util.Locale
 fun TaskItem2(
     task: TaskVM,
     onTaskClick: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onItemClick: () -> Unit
 ) {
 
     fun isOverdue(dueDate: String?, dueTime: String?): Boolean {
         if (dueDate.isNullOrEmpty() || dueTime.isNullOrEmpty()) return false
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())  // Expected format: "2025-02-23"
-        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())     // Expected format: "02:30 PM"
+        val dateFormat =
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())  // Expected format: "2025-02-23"
+        val timeFormat =
+            SimpleDateFormat("hh:mm a", Locale.getDefault())     // Expected format: "02:30 PM"
 
         return try {
             val currentDate = Calendar.getInstance()
@@ -60,6 +64,7 @@ fun TaskItem2(
     val timeColor = if (isOverdue(task.dueDate, task.dueTime)) Color.Red else Color.Black
     Row(
         modifier = Modifier
+            .clickable { onItemClick() }
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .background(
@@ -68,44 +73,43 @@ fun TaskItem2(
             )
             .padding(12.dp),
 
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        verticalAlignment = Alignment.CenterVertically
+    ) {
 
-            Checkbox(
-                checked = false,
-                onCheckedChange = {onTaskClick()},
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color.Blue,
-                    uncheckedColor = Color.Gray
-                ),
+        Checkbox(
+            checked = task.isCompleted,
+            onCheckedChange = { onTaskClick() },
+            colors = CheckboxDefaults.colors(
+                checkedColor = Color.Blue,
+                uncheckedColor = Color.Gray
+            ),
+            modifier = Modifier
+                .border(
+                    border = BorderStroke(2.dp, Color.Blue),
+                )
+        )
+        Column {
+            Text(
+                text = task.title,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF333333).copy(alpha = 0.70f),
+                fontSize = 16.sp,
                 modifier = Modifier
-                    .border(
-                        border = BorderStroke(2.dp,Color.Blue),
-                    )
-                )
-            Column {
-                Text(
-                    text= task.title,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF333333).copy(alpha = 0.70f),
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 0.dp)
+                    .padding(horizontal = 16.dp, vertical = 0.dp)
 
-                )
-                Text(
-                    text = "${task.dueDate ?: "No Date"} ${task.dueTime ?: "No Time"}",
-                    fontSize = 12.sp,
-                    color = timeColor,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 0.dp)
+            )
+            Text(
+                text = "${task.dueDate ?: "No Date"} ${task.dueTime ?: "No Time"}",
+                fontSize = 12.sp,
+                color = timeColor,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 0.dp)
 
-                )
-            }
+            )
+        }
 
-            }
+    }
 }
 
-fun Checkbox(checked: Boolean, onCheckedChange: Nothing?, modifier: Modifier.Companion, colors: Color) {
 
-}
+
