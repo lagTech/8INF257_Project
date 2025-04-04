@@ -1,10 +1,16 @@
 package com.example.android_routine.ui.screens.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.example.android_routine.data.model.Task
 import com.example.android_routine.data.repository.TaskRepository
 import com.example.android_routine.data.viewmodelobject.TaskVM
+import com.example.android_routine.worker.ReminderWorker
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 class HomeViewModel(
     private val repository: TaskRepository
@@ -128,6 +135,48 @@ class HomeViewModel(
             false
         }
     }
+
+    fun scheduleReminder(context: Context, delayInMinutes: Long = 1L) {
+        val request = OneTimeWorkRequestBuilder<ReminderWorker>()
+            .setInitialDelay(delayInMinutes, TimeUnit.MINUTES)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "reminder_work",
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+    }
+
+    fun scheduleReminderForTask(context: Context, taskId: Int, title: String, dueDate: String?, dueTime: String?) {
+        if (dueDate.isNullOrEmpty() || dueTime.isNullOrEmpty()) return
+
+        val formatterDate = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formatterTime = DateTimeFormatter.ofPattern("hh:mm a")
+        try {
+            val dueDateTime = LocalDate.parse(dueDate, formatterDate)
+                .atTime(java.time.LocalTime.parse(dueTime, formatterTime))
+            val now = java.time.LocalDateTime.now()
+
+            val delay = java.time.Duration.between(now, dueDateTime).toMillis()
+            if (delay <= 0) return // Don't schedule past reminders
+
+            val request = OneTimeWorkRequestBuilder<ReminderWorker>()
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(workDataOf("title" to title))
+                .addTag("reminder_task_$taskId")
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "reminder_task_$taskId",
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
 
 
 

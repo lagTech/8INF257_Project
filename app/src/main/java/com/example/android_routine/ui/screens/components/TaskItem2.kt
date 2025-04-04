@@ -34,7 +34,7 @@ fun TaskItem2(
         val dateFormat =
             SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())  // Expected format: "2025-02-23"
         val timeFormat =
-            SimpleDateFormat("hh:mm a", Locale.getDefault())     // Expected format: "02:30 PM"
+            SimpleDateFormat("HH:mm", Locale.getDefault())     // Expected format: "02:30 PM"
 
         return try {
             val currentDate = Calendar.getInstance()

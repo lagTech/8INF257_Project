@@ -32,12 +32,33 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.android_routine.ui.screens.components.CategoryItem
 import com.example.android_routine.ui.screens.components.TaskItem
+import androidx.compose.ui.platform.LocalContext
+import android.Manifest
+import android.app.Activity
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.compose.ui.platform.LocalContext
+
 
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel ) {
+
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val activity = context as? Activity
+            activity?.let {
+                ActivityCompat.requestPermissions(
+                    it,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
+    }
 
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -141,7 +162,8 @@ fun HomeScreen(
                                 navController.navigate(Screen.TaskDetail.createRoute(task.id!!)) },
                             onDelete = {
                                 viewModel.onEvent(HomeViewModel.HomeEvent.DeleteTask(task.id ?: return@TaskItem))
-                                       },
+                                viewModel.scheduleReminder(context = context, delayInMinutes = 1)
+                            },
                             onRadioClick = {
                                 viewModel.onEvent(HomeViewModel.HomeEvent.ToggleComplete(task.id ?: return@TaskItem))
                             }

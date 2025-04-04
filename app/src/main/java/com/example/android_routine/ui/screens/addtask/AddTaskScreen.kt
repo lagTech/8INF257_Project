@@ -1,5 +1,6 @@
 package com.example.android_routine.ui.screens.addtask
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,6 +53,7 @@ import com.example.android_routine.ui.screens.components.DateTimePickers
 import com.example.android_routine.ui.screens.components.NotesCard
 import com.example.android_routine.ui.screens.components.PeriodicityDropDown
 import com.example.android_routine.ui.screens.components.PrioritySection
+import com.example.android_routine.utils.RoutinesUtils
 
 
 @Composable
@@ -63,6 +65,8 @@ fun AddTaskScreen(
     val categoryUiState by categoryViewModel.uiState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val utils = remember { RoutinesUtils() }
 
     LaunchedEffect(true) {
         viewModel.eventFlow.collect { event ->
@@ -85,7 +89,7 @@ fun AddTaskScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit)
+                    viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit(context, utils), context)
                 },
                 modifier = Modifier
                     .padding(end = 16.dp, bottom = 80.dp),
@@ -139,7 +143,7 @@ fun AddTaskScreen(
 
                 TextField(
                     value = uiState.title,
-                    onValueChange = { viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateTitle(it)) },
+                    onValueChange = { viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateTitle(it), context) },
                     label = { Text("Title") },
                     isError = uiState.isError,
                     singleLine = true,
@@ -167,7 +171,7 @@ fun AddTaskScreen(
                 CategoryDropDownMenu(
                     selectedCategoryName = uiState.categoryName,
                     onCategorySelected = { id, name ->
-                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateCategory(id, name))
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateCategory(id, name), context )
                     },
                     categories = categoryUiState.allCategories
                 )
@@ -183,10 +187,10 @@ fun AddTaskScreen(
                 DateTimePickers(
                     context = LocalContext.current,
                     onDateSelected = {
-                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueDate(it))
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueDate(it), context)
                     },
                     onTimeSelected = {
-                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueTime(it))
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateDueTime(it), context)
                     }
                 )
 
@@ -203,7 +207,7 @@ fun AddTaskScreen(
                 PrioritySection(
                     selectedPriority = uiState.priority,
                     onPriorityChange = {
-                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePriority(it))
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePriority(it), context)
                     }
                 )
 
@@ -218,7 +222,7 @@ fun AddTaskScreen(
                 PeriodicityDropDown(
                     selectedPeriodicity = uiState.periodicity,
                     onPeriodicitySelected = {
-                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePeriodicity(it))
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdatePeriodicity(it), context)
                     }
                 )
 
@@ -233,7 +237,7 @@ fun AddTaskScreen(
                 NotesCard(
                     notes = uiState.notes,
                     onNotesChange = {
-                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateNotes(it))
+                        viewModel.onEvent(AddTaskViewModel.TaskEvent.UpdateNotes(it), context )
                     }
                 )
 
@@ -243,7 +247,7 @@ fun AddTaskScreen(
 
                         FloatingActionButton(
                             onClick = {
-                                viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit)
+                                viewModel.onEvent(AddTaskViewModel.TaskEvent.Submit(context, utils), context)
                             },
                             modifier = Modifier
                                 .padding(vertical = 60.dp)

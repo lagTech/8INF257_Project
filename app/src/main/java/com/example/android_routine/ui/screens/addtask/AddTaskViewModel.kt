@@ -1,9 +1,11 @@
 package com.example.android_routine.ui.screens.addtask
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android_routine.data.model.Task
 import com.example.android_routine.data.repository.TaskRepository
+import com.example.android_routine.utils.RoutinesUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -34,10 +36,10 @@ class AddTaskViewModel(
         data class UpdatePriority(val priority: String): TaskEvent()
         data class UpdateNotes(val notes: String) : TaskEvent()
         data class UpdateCategory(val id: Int, val name: String) : TaskEvent()
-        object Submit : TaskEvent()
+        data class Submit(val context: Context, val utils: RoutinesUtils) : TaskEvent()
     }
 
-    fun onEvent(event: TaskEvent) {
+    fun onEvent(event: TaskEvent, context: Context) {
         when (event) {
             is TaskEvent.UpdateTitle -> updateTitle(event.title)
             is TaskEvent.UpdateDueDate -> updateDueDate(event.dueDate)
@@ -46,7 +48,7 @@ class AddTaskViewModel(
             is TaskEvent.UpdatePriority -> updatePriority(event.priority)
             is TaskEvent.UpdateNotes -> updateNotes(event.notes)
             is TaskEvent.UpdateCategory -> updateCategory(event.id, event.name)
-            is TaskEvent.Submit -> submitTask()
+            is TaskEvent.Submit -> submitTask(context, event.utils)
         }
     }
 
@@ -80,7 +82,7 @@ class AddTaskViewModel(
 
 
 
-    private fun submitTask() {
+    private fun submitTask(context: Context, utils: RoutinesUtils) {
         val state = _uiState.value
 
         if (state.title.isBlank()) {
@@ -126,7 +128,54 @@ class AddTaskViewModel(
                 isCompleted = false
             )
 
-            repository.upsert(newTask)
+            val id = repository.upsert(newTask)
+
+            if (newTask.dueTime != null && newTask.dueDate != null) {
+                when (newTask.periodicity) {
+                    "Once" -> {
+                        utils.scheduleTaskReminder(
+                            context = context,
+                            taskId = id.toInt(),
+                            title = newTask.title,
+                            dueDate = newTask.dueDate,
+                            dueTime = newTask.dueTime
+                        )
+                    }
+                    "Daily" -> {
+                        utils.scheduleDailyExactReminder(
+                            context = context,
+                            taskId = id.toInt(),
+                            title = newTask.title,
+                            dueTime = newTask.dueTime
+                        )
+                    }
+                    "Weekly" -> {
+                        utils.scheduleRecurringReminder(
+                            context = context,
+                            taskId = id.toInt(),
+                            title = newTask.title,
+                            intervalDays = 7
+                        )
+                    }
+                    "Monthly" -> {
+                        utils.scheduleRecurringReminder(
+                            context = context,
+                            taskId = id.toInt(),
+                            title = newTask.title,
+                            intervalDays = 30
+                        )
+                    }
+                    "Yearly" -> {
+                        utils.scheduleRecurringReminder(
+                            context = context,
+                            taskId =  id.toInt(),
+                            title = newTask.title,
+                            intervalDays = 365
+                        )
+                    }
+                }
+            }
+
 
             _eventFlow.emit(UiEvent.ShowSnackbar("Task added successfully"))
             _eventFlow.emit(UiEvent.Navigate(Screen.Home.route))

@@ -28,7 +28,7 @@ fun PeriodicityDropDown(
     selectedPeriodicity: String,
     onPeriodicitySelected: (String) -> Unit
 ) {
-    val periodicityOptions = listOf( "once","Daily", "Weekly", "Monthly", "Yearly")
+    val periodicityOptions = listOf( "Once","Daily", "Weekly", "Monthly", "Yearly")
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(

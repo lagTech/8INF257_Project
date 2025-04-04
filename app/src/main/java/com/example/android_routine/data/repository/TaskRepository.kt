@@ -8,6 +8,6 @@ interface TaskRepository {
 
      fun getTasks(): Flow<List<Task>>
     suspend fun getTaskById(id: Int): Task?
-    suspend fun upsert(task: Task)
+    suspend fun upsert(task: Task): Long
     suspend fun delete(task: Task)
 }
