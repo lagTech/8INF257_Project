@@ -17,6 +17,7 @@ class ReminderWorker(
 ) : Worker(context, workerParams) {
 
     override fun doWork(): Result {
+        Log.d("ReminderWorker", "🔥 WORKER STARTED")
         val title = inputData.getString("title") ?: "Task Reminder"
         val periodicity = inputData.getString("periodicity")
         val dueTime = inputData.getString("dueTime")

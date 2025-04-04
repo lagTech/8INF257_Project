@@ -1,6 +1,7 @@
 package com.example.android_routine.ui.screens.addtask
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android_routine.data.model.Task
@@ -148,6 +149,8 @@ class AddTaskViewModel(
                             title = newTask.title,
                             dueTime = newTask.dueTime
                         )
+                        Log.d("ReminderTest", "Scheduled DAILY task for ${newTask.title} at ${newTask.dueTime}")
+
                     }
                     "Weekly" -> {
                         utils.scheduleRecurringReminder(

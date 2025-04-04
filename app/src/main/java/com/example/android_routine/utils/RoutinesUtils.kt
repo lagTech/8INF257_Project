@@ -8,26 +8,31 @@ import com.example.android_routine.worker.ReminderWorker
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import androidx.work.Data
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 class  RoutinesUtils {
 
     fun scheduleDailyExactReminder(context: Context, taskId: Int, title: String, dueTime: String) {
-        val formatter = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-        var time = formatter.parse(dueTime) ?: return
+        val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val parsedTime = formatter.parse(dueTime) ?: return
 
-        val calendar = Calendar.getInstance().apply {
-            val now = System.currentTimeMillis()
-            timeInMillis = now
-            val timeOnly = Calendar.getInstance().apply { time = time }
-            set(Calendar.HOUR_OF_DAY, timeOnly.get(Calendar.HOUR_OF_DAY))
-            set(Calendar.MINUTE, timeOnly.get(Calendar.MINUTE))
+        val now = Calendar.getInstance()
+
+        val scheduledTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, parsedTime.hours)
+            set(Calendar.MINUTE, parsedTime.minutes)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-            if (timeInMillis <= now) add(Calendar.DATE, 1) // schedule for tomorrow
+
+            // If the time has already passed today, schedule for tomorrow
+            if (before(now)) {
+                add(Calendar.DATE, 1)
+            }
         }
 
-        val delay = calendar.timeInMillis - System.currentTimeMillis()
+        val delay = scheduledTime.timeInMillis - now.timeInMillis
 
         val data = Data.Builder()
             .putString("title", title)
@@ -43,9 +48,8 @@ class  RoutinesUtils {
 
         WorkManager.getInstance(context).enqueue(request)
 
-        Log.d("RoutinesUtils", "Scheduled daily task \"$title\" at $dueTime (delay: $delay ms)")
+        Log.d("RoutinesUtils", "✅ Scheduled daily task \"$title\" at $dueTime (delay: $delay ms)")
     }
-
 
     fun scheduleRecurringReminder(context: Context, taskId: Int, title: String, intervalDays: Long) {
         val data = androidx.work.Data.Builder()
