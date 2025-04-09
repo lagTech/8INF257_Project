@@ -1,15 +1,10 @@
 package com.example.android_routine.ui.screens.addtask
 
-import android.content.Context
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+
 import androidx.compose.runtime.Composable
-import androidx.navigation.compose.rememberNavController
+
 import androidx.compose.foundation.layout.*
-import com.example.android_routine.ui.screens.components.BottomNav
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,13 +12,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.MailOutline
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.ShoppingCart
+
 import androidx.compose.material.icons.sharp.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.remember
@@ -42,13 +31,10 @@ import com.example.android_routine.ui.screens.components.TaskItem
 import com.example.android_routine.ui.screens.components.CategoryItem
 
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
-import com.example.android_routine.data.repository.TaskRepository
+
 import com.example.android_routine.ui.screens.allcategories.CategoryViewModel
 import com.example.android_routine.ui.screens.components.CategoryDropDownMenu
-import com.example.android_routine.ui.screens.components.DateItem
 import com.example.android_routine.ui.screens.components.DateTimePickers
 import com.example.android_routine.ui.screens.components.NotesCard
 import com.example.android_routine.ui.screens.components.PeriodicityDropDown
