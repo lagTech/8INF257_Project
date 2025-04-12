@@ -89,7 +89,7 @@ class AddTaskViewModel(
         if (state.title.isBlank()) {
             _uiState.update { it.copy(isError = true, errorMessage = "Title can't be empty") }
             viewModelScope.launch {
-                _eventFlow.emit(UiEvent.ShowSnackbar(" Enter a task title"))
+                _eventFlow.emit(UiEvent.ShowSnackbar("Please Enter a task title"))
             }
             return
         }
